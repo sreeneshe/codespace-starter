@@ -48,6 +48,15 @@
   // No upgrade = TRUE: deps are already baked at known-good versions, so
   // this refreshes only the named packages and avoids re-churning the
   // learnr/knitr/xfun chain (see the xfun ABI note in student/Dockerfile).
+  //
+  // ACCEPTED RISK — blast radius: tracking GitHub HEAD means a bad commit
+  // to either package breaks EVERY new Codespace at once, with no pinned
+  // image to shield us. We accept this in exchange for fast bug-fix
+  // delivery. The mitigation is operational, not config: if new Codespaces
+  // start failing, revert the offending commit in the upstream PPBDS/<pkg>
+  // repo ASAP — that fixes all subsequent creates immediately, with no
+  // image rebuild or pin bump needed. (If this ever bites too often, switch
+  // to pinning a tested release tag here and bumping it deliberately.)
   "postCreateCommand": "R -q -e 'pak::pkg_install(c(\"PPBDS/tutorial.helpers\", \"PPBDS/vscode.tutorials\"), ask = FALSE)'",
 
   // Visual "setup complete" signal for students. In the devcontainer
