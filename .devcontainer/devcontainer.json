@@ -21,6 +21,24 @@
   // not a bug. The built-in token is read-mostly outside the home repo.
   "image": "ghcr.io/ppbds/devcontainers/student:0.2.1",
 
+  // Refresh the fast-moving PPBDS course packages to the latest commit on
+  // each one's default branch, every time a Codespace is created. The
+  // image (see student/Dockerfile in PPBDS/devcontainers) BAKES these too,
+  // which (1) pre-installs all transitive deps so this is a quick single-
+  // package refresh, not a cold build, and (2) leaves a working fallback
+  // version if GitHub is unreachable here — a failed postCreateCommand
+  // doesn't block the Codespace from opening.
+  //
+  // This MUST be postCreateCommand, not onCreate/updateContentCommand:
+  // those run at prebuild time and would re-freeze "latest" at the
+  // prebuild, recreating the manual-update problem this solves. postCreate
+  // runs live when each Codespace is created, even from a prebuild.
+  //
+  // No upgrade = TRUE: deps are already baked at known-good versions, so
+  // this refreshes only the named packages and avoids re-churning the
+  // learnr/knitr/xfun chain (see the xfun ABI note in student/Dockerfile).
+  "postCreateCommand": "R -q -e 'pak::pkg_install(c(\"PPBDS/tutorial.helpers\", \"PPBDS/vscode.tutorials\"), ask = FALSE)'",
+
   "customizations": {
     "vscode": {
 
