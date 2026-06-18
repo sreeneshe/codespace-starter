@@ -62,26 +62,11 @@ guide="$here/STUDENT_WORKFLOW.md"
 marker="$HOME/.student_repo"
 
 # postAttachCommand always runs in the codespace-starter folder (not the
-# student's open folder), so the banner can't detect progress by directory.
-# Instead, make_repo.sh drops a marker once a repo has been created; we key the
-# banner off that — nudge to create one until it exists, then point at it.
-if [[ -f "$marker" ]]; then
-  repo="$(cat "$marker" 2>/dev/null || true)"
-  cat <<BANNER
-
-════════════════════════════════════════════════════════════
-   📂  Your repo: ${repo}
-
-   • Explorer shows ${repo}?  You're in it — commit & push via
-     the Source Control panel (left).
-   • If not:  File → Open Folder → /workspaces/${repo}
-
-   Guide: ${guide}
-   Type \`clear\` to remove this banner.
-════════════════════════════════════════════════════════════
-
-BANNER
-else
+# student's open folder), so we can't detect progress by directory. make_repo.sh
+# drops a marker once a repo has been created; until then, show the "how to
+# start" banner. Once a repo exists there's nothing more to say — stay silent
+# (no returning banner; the short prompt already shows which folder you're in).
+if [[ ! -f "$marker" ]]; then
   cat <<BANNER
 
 ════════════════════════════════════════════════════════════
