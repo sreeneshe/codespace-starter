@@ -12,25 +12,26 @@
   // work in a copy → they don't, and we'd need another plan (prebuilds on
   // the assignment repos, or just accept the cold first start).
 
-  // PPBDS student image, pinned to v0.3.2. Bumping is a deliberate
+  // PPBDS student image, pinned to v0.4.0. Bumping is a deliberate
   // edit to this line — never use `:latest` in student-facing config,
   // since it would float silently with every push to PPBDS/devcontainers.
   //
   // Bakes in: gh, quarto, arf (Rust R console), httpgd, pak,
-  // tutorial.helpers, vscode.tutorials, and three AI coding CLIs:
-  //   - claude  (Anthropic)         — needs ANTHROPIC_API_KEY
-  //   - gemini  (Google)            — free tier available, else GOOGLE_API_KEY
-  //   - aider   (multi-provider)    — DeepSeek/OpenRouter for cheap models
-  // Students set the API keys for whichever tools they use as Codespaces
-  // user secrets at https://github.com/settings/codespaces. See
-  // https://github.com/PPBDS/devcontainers for details.
+  // tutorial.helpers, vscode.tutorials, and four AI coding CLIs:
+  //   - claude  (Anthropic)         — sign in with a Claude plan, or ANTHROPIC_API_KEY
+  //   - gemini  (Google)            — sign in (free tier), or GOOGLE_API_KEY
+  //   - codex   (OpenAI)            — sign in with a ChatGPT plan, or `codex login`
+  //   - aider   (multi-provider)    — key-only: DeepSeek/OpenRouter for cheap models
+  // Signing in on first run is the recommended path; API keys (set as
+  // Codespaces user secrets at https://github.com/settings/codespaces) are
+  // the fallback. See https://github.com/PPBDS/devcontainers for details.
   //
   // Note for instructors: `gh` is preinstalled and authenticated against
   // the Codespace's home repo via the built-in GITHUB_TOKEN. Pushing to
   // OTHER repos (e.g., cloning a sibling package and pushing to it)
   // requires a one-time `gh auth login` per Codespace — that's by design,
   // not a bug. The built-in token is read-mostly outside the home repo.
-  "image": "ghcr.io/ppbds/devcontainers/student:0.3.2",
+  "image": "ghcr.io/ppbds/devcontainers/student:0.4.0",
 
   // Refresh the fast-moving PPBDS course packages to the latest commit on
   // each one's default branch, every time a Codespace is created. The
@@ -88,9 +89,12 @@
       "settings": {
 
         // Use arf (Rust-based R console) instead of the default R terminal.
-        // The image installs arf at this exact path; if it ever moves,
-        // update both this setting and base/Dockerfile in PPBDS/devcontainers.
-        "r.rterm.linux": "/home/rstudio/.cargo/bin/arf",
+        // Point at the stable /usr/local/bin/arf symlink the base image
+        // provides for exactly this purpose (see base/Dockerfile in
+        // PPBDS/devcontainers), NOT the real /home/rstudio/.cargo/bin/arf
+        // path — that way a change to the image's default user only touches
+        // base/Dockerfile, not this consumer setting.
+        "r.rterm.linux": "/usr/local/bin/arf",
 
         // Required for arf-style consoles to handle pasted code correctly.
         "r.bracketedPaste": true,

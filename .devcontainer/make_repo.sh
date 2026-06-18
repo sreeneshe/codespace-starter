@@ -28,6 +28,30 @@ if ! grep -qxF 'unset GITHUB_TOKEN GH_TOKEN' "$HOME/.bashrc" 2>/dev/null; then
   echo 'unset GITHUB_TOKEN GH_TOKEN' >> "$HOME/.bashrc"
 fi
 
+# 2b. Make every NEW terminal open in your work repo, not this launcher. A
+#     terminal that starts in /workspaces/codespace-starter leaves `gemini`,
+#     `claude`, etc. running here, so the files they create land in the
+#     launcher — invisibly, since the Explorer is showing your repo. We append
+#     a guard to ~/.bashrc (runs at each shell start) that cd's into the repo
+#     recorded in ~/.student_repo (written in step 5). Scoped to the launcher
+#     dir and gated on the repo existing, so it never overrides where you've
+#     deliberately navigated. Idempotent via the sentinel in the marker line.
+if ! grep -qF 'codespace-starter:auto-cd' "$HOME/.bashrc" 2>/dev/null; then
+  cat >> "$HOME/.bashrc" <<'BASHRC'
+
+# codespace-starter:auto-cd — open new terminals in your work repo, not the launcher.
+if [[ $PWD == /workspaces/codespace-starter && -r $HOME/.student_repo ]]; then
+  __sr=$(cat "$HOME/.student_repo" 2>/dev/null) || true
+  # Only a plain repo name (no slashes, not . or ..) — the marker is written by
+  # make_repo.sh, but validate so a corrupted file can't cd us off target.
+  if [[ -n ${__sr:-} && $__sr != */* && $__sr != . && $__sr != .. && -d /workspaces/$__sr ]]; then
+    cd "/workspaces/$__sr"
+  fi
+  unset __sr
+fi
+BASHRC
+fi
+
 # 3. Sign in as yourself — only if not already signed in. The hostname,
 #    protocol, and "use the browser" answers are chosen for you; the only manual
 #    step is clicking Authorize in the browser (GitHub's security boundary).
@@ -87,8 +111,9 @@ cat <<BANNER
 
 ════════════════════════════════════════════════════════════
    🎉  Created your repo: $repo   (/workspaces/$repo)
+       This terminal is now INSIDE it — run gemini/claude/quarto here.
 
-   👉 Open it:  File → Open Folder → /workspaces/$repo
+   👉 Make the Explorer show it too:  File → Open Folder → /workspaces/$repo
       (the editor may switch on its own; if not, use that menu)
 
    Then, working inside your repo:
@@ -103,4 +128,16 @@ BANNER
 #    it's a convenience only — the File → Open Folder step above is the guarantee.
 if command -v code >/dev/null 2>&1; then
   code -r "/workspaces/$repo" >/dev/null 2>&1 || true
+fi
+
+# 8. Put THIS terminal in the repo too. Steps 2b and 7 only fix NEW terminals
+#    and the Explorer; the terminal that ran this script is still sitting in
+#    codespace-starter, so `gemini`/`claude` typed right now would write to the
+#    launcher — invisibly, since the Explorer shows the repo. A script can't cd
+#    its parent shell, so we replace this shell with a fresh one rooted in the
+#    repo. Only when attached to a terminal (skip in non-interactive/CI runs).
+#    Must be LAST: exec never returns. `exit` later drops back to the launcher.
+if [[ -t 1 ]]; then
+  cd "/workspaces/$repo"
+  exec bash
 fi

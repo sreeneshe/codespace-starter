@@ -9,6 +9,10 @@
 # postAttach, it fires only after the slow `pak` install has finished — so the
 # banner doubles as a genuine "setup is done" signal.
 #
+# Note: `-u` and `pipefail` but deliberately NOT `-e`. This is a best-effort
+# banner/onboarding script; a failure in the Workspace Trust config step below
+# (e.g. node missing, unwritable settings) must NOT abort the script and rob the
+# student of the "your Codespace is ready" banner. Steps guard themselves.
 set -uo pipefail
 
 # Disable VS Code Workspace Trust for this Codespace. Without this, a repo a

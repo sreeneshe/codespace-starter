@@ -18,7 +18,7 @@ bash .devcontainer/make_repo.sh my-class-work
 asks you to **authorize** — click through it, then come back. The script then:
 
 - signs you in as yourself,
-- creates a new private repo under your GitHub account, and
+- creates a new public repo under your GitHub account, and
 - downloads it into the Codespace at `/workspaces/<name>`.
 
 Then **open your repo as the workspace**: **File → Open Folder →
@@ -57,9 +57,8 @@ This renders your `.qmd` and publishes it as a GitHub Pages site under your
 repo. The first time, you may need to turn on Pages in your repo's
 **Settings → Pages**.
 
-**B. Just the image, fastest possible:** make your repo public
-(**Settings → General → Change visibility**), commit the image, push, and it's
-live at:
+**B. Just the image, fastest possible:** your repo is already public, so just
+commit the image, push, and it's live at:
 
 ```
 https://raw.githubusercontent.com/<your-username>/<your-repo>/main/plot.png
