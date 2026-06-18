@@ -42,7 +42,11 @@ if ! grep -qF 'codespace-starter:auto-cd' "$HOME/.bashrc" 2>/dev/null; then
 # codespace-starter:auto-cd — open new terminals in your work repo, not the launcher.
 if [[ $PWD == /workspaces/codespace-starter && -r $HOME/.student_repo ]]; then
   __sr=$(cat "$HOME/.student_repo" 2>/dev/null) || true
-  [[ -n ${__sr:-} && -d /workspaces/$__sr ]] && cd "/workspaces/$__sr"
+  # Only a plain repo name (no slashes, not . or ..) — the marker is written by
+  # make_repo.sh, but validate so a corrupted file can't cd us off target.
+  if [[ -n ${__sr:-} && $__sr != */* && $__sr != . && $__sr != .. && -d /workspaces/$__sr ]]; then
+    cd "/workspaces/$__sr"
+  fi
   unset __sr
 fi
 BASHRC
