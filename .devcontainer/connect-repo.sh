@@ -1,18 +1,69 @@
 #!/usr/bin/env bash
 #
-# make_repo.sh — create your personal work repo from a Codespace launched off
-# codespace-starter.
+# connect-repo.sh — create (or connect to) your personal work repo from a
+# Codespace launched off codespace-starter. If a repo by the given name already
+# exists on your GitHub account, it's cloned; otherwise it's created.
 #
-#   Usage:  .devcontainer/make_repo.sh <repo-name>
+#   Usage:  .devcontainer/connect-repo.sh <repo-name>
 #
 # Safe to re-run: skips the login if you're already signed in, and clones your
 # repo instead of recreating it if it already exists from a past session.
 #
 set -euo pipefail
 
+# --help / -h: explain (without running) the git/GitHub commands this script
+# issues, so you can learn what's happening and do it by hand. Kept before any
+# of the side-effecting steps below so `--help` never changes anything.
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  cat <<'HELP'
+connect-repo.sh — create or connect to your GitHub work repo
+
+This script just automates a few GitHub steps so you can start fast. There is
+no magic here: below is every command it runs, what it means, and how you could
+do the exact same thing yourself with `gh` (the GitHub CLI) and `git`. You'll
+use these commands all term, so it's worth understanding them.
+
+  1. ACT AS YOU, NOT AS THE CODESPACE
+         unset GITHUB_TOKEN GH_TOKEN
+     A Codespace starts with a built-in token that can only touch
+     codespace-starter and can't create repos. Clearing it makes `gh` and
+     `git` use YOUR GitHub login instead.
+
+  2. SIGN IN TO GITHUB AS YOURSELF (once per Codespace)
+         gh auth login --hostname github.com --git-protocol https --web
+     Opens a browser sign-in. Click Authorize, then come back.
+
+  3. MAKE `git push` AUTHENTICATE AS YOU
+         git config --global credential.helper store
+         # then save your token (shown by `gh auth token`) into ~/.git-credentials
+     Stores your token so pushes — from the terminal AND the VS Code Source
+     Control panel — go out as you, not as the built-in Codespace token.
+
+  4. CREATE A NEW REPO, OR CONNECT TO ONE YOU ALREADY HAVE
+     New repo (doesn't exist yet on your account):
+         gh repo create <name> --public --clone
+     Existing repo (already on your account):
+         gh repo clone <name>
+     Either way you end up with the repo at /workspaces/<name>.
+
+After that, you work in /workspaces/<name> and save with the normal git cycle:
+         git add -A
+         git commit -m "describe what you changed"
+         git push
+
+The script also drops your terminal into the new folder and smooths a couple of
+Codespace quirks, but steps 1–4 above are the whole GitHub story. Run them by
+hand any time you'd rather not use the script.
+
+  Usage:  .devcontainer/connect-repo.sh <repo-name>
+HELP
+  exit 0
+fi
+
 repo="${1:-}"
 if [[ -z "$repo" ]]; then
-  echo "Usage: .devcontainer/make_repo.sh <repo-name>" >&2
+  echo "Usage: .devcontainer/connect-repo.sh <repo-name>" >&2
+  echo "       .devcontainer/connect-repo.sh --help   (explains the git commands it runs)" >&2
   exit 2
 fi
 
@@ -43,7 +94,7 @@ if ! grep -qF 'codespace-starter:auto-cd' "$HOME/.bashrc" 2>/dev/null; then
 if [[ $PWD == /workspaces/codespace-starter && -r $HOME/.student_repo ]]; then
   __sr=$(cat "$HOME/.student_repo" 2>/dev/null) || true
   # Only a plain repo name (no slashes, not . or ..) — the marker is written by
-  # make_repo.sh, but validate so a corrupted file can't cd us off target.
+  # connect-repo.sh, but validate so a corrupted file can't cd us off target.
   if [[ -n ${__sr:-} && $__sr != */* && $__sr != . && $__sr != .. && -d /workspaces/$__sr ]]; then
     cd "/workspaces/$__sr"
   fi
@@ -119,3 +170,18 @@ if [[ -t 1 ]]; then
   cd "/workspaces/$repo"
   exec bash
 fi
+
+# ─────────────────────────────────────────────────────────────────────────────
+# TODO — revisit mid-July 2026
+#
+# Connecting to an *existing* repo currently only works for a BARE name under
+# YOUR OWN account: `gh` resolves `<name>` to `<your-username>/<name>` (see the
+# create-or-clone block, step 4). Passing `owner/repo` is NOT supported — the
+# slash would (a) clone into a nested /workspaces/owner/repo path, and (b) trip
+# the step-2b auto-cd guard, which deliberately rejects names containing "/".
+#
+# If we decide students need to connect to an ORG repo or someone else's repo,
+# teach this script to accept `owner/repo`: clone into just the basename,
+# record the basename in ~/.student_repo, and keep the auto-cd guard happy.
+# Open question to settle first: is that a workflow the course actually needs?
+# ─────────────────────────────────────────────────────────────────────────────

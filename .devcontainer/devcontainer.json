@@ -1,23 +1,26 @@
 {
   "name": "Preceptor's Primer",
 
-  // TODO — revisit before next term: do students actually get the prebuild?
-  // Codespaces prebuilds ARE enabled on PPBDS/codespace-starter (Settings →
-  // Codespaces), which makes launches FROM THIS REPO fast. But a prebuild
-  // attaches to this repo only. If students get their own copy via "Use
-  // this template" or GitHub Classroom, those are fresh repos with NO
-  // prebuild — their first launch builds on-demand (slow). Need to decide
-  // the distribution model: (a) students launch Codespaces directly from
-  // codespace-starter → they benefit from the prebuild; or (b) students
-  // work in a copy → they don't, and we'd need another plan (prebuilds on
-  // the assignment repos, or just accept the cold first start).
+  // Distribution model (settled): students launch a Codespace directly ON
+  // PPBDS/codespace-starter and run connect-repo.sh to create or clone their
+  // own work repo — they do NOT "Use this template", fork, or use Classroom.
+  // Because they launch from THIS repo, they get its Codespaces prebuild
+  // (enabled in Settings → Codespaces), so first launches are fast. Their work
+  // repo is just data, opened as a folder inside the same Codespace; it needs
+  // no prebuild of its own.
 
-  // PPBDS student image, pinned to v0.5.0. Bumping is a deliberate
+  // PPBDS student image, pinned to v0.6.0. Bumping is a deliberate
   // edit to this line — never use `:latest` in student-facing config,
   // since it would float silently with every push to PPBDS/devcontainers.
   //
   // Bakes in: gh, quarto, arf (Rust R console), httpgd, pak,
-  // tutorial.helpers, vscode.tutorials, and four AI coding CLIs:
+  // tutorial.helpers, vscode.tutorials, a basic Python data-science stack
+  // (numpy/pandas/matplotlib/seaborn/scikit-learn/statsmodels/jupyter in a venv
+  // at /opt/venv, also R's reticulate Python), interactive-viz + Shinylive
+  // packages (R plotly/leaflet/DT/crosstalk + Python plotly/altair/folium/
+  // itables; shiny+shinylive compile to WebAssembly for static hosting),
+  // Observable (Quarto renders {ojs} cells out of the box; the `observable`
+  // Framework CLI is also installed), and four AI coding CLIs:
   //   - claude  (Anthropic)         — sign in with a Claude plan, or ANTHROPIC_API_KEY
   //   - codex   (OpenAI)            — sign in with a ChatGPT plan, or `codex login`
   //   - agy     (Antigravity/Google)— sign in with a Google account, or ANTIGRAVITY_API_KEY
@@ -31,7 +34,7 @@
   // OTHER repos (e.g., cloning a sibling package and pushing to it)
   // requires a one-time `gh auth login` per Codespace — that's by design,
   // not a bug. The built-in token is read-mostly outside the home repo.
-  "image": "ghcr.io/ppbds/devcontainers/student:0.5.0",
+  "image": "ghcr.io/ppbds/devcontainers/student:0.6.0",
 
   // Refresh the fast-moving PPBDS course packages to the latest commit on
   // each one's default branch, every time a Codespace is created. The
@@ -94,10 +97,20 @@
         "PPBDS.vscode-r-tutorials",
         "ritwickdey.LiveServer",
         "tomoki1207.pdf",
-        "mechatroner.rainbow-csv"
+        "mechatroner.rainbow-csv",
+        // Python data science: language support + notebooks. Unlike the AI
+        // assistant panels above, these are ordinary language tooling that
+        // renders fine in the web Codespaces client.
+        "ms-python.python",
+        "ms-toolsai.jupyter"
       ],
 
       "settings": {
+
+        // Point the Python extension at the baked data-science venv so
+        // notebooks and scripts use the right interpreter out of the box
+        // (numpy/pandas/etc. importable, the "Python (data science)" kernel).
+        "python.defaultInterpreterPath": "/opt/venv/bin/python",
 
         // Use arf (Rust-based R console) instead of the default R terminal.
         // Point at the stable /usr/local/bin/arf symlink the base image

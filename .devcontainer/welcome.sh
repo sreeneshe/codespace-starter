@@ -21,10 +21,10 @@ set -uo pipefail
 # Restricted Mode can suppress settings/features — e.g. the "run git fetch
 # automatically?" prompt reappears. Disabling trust lets the Codespace's
 # Machine-scope settings (arf console, autosave, git.autofetch off, …) apply
-# cleanly to whatever folder the student opens — which is exactly why make_repo
-# no longer needs to seed a per-repo .vscode/settings.json (see its NOTE).
-# A Codespace is an
-# isolated, managed container GitHub already auto-trusts, so turning the check
+# cleanly to whatever folder the student opens — which is exactly why
+# connect-repo no longer needs to seed a per-repo .vscode/settings.json (see its
+# NOTE). A Codespace is an isolated, managed container GitHub already
+# auto-trusts, so turning the check
 # off is safe. It's an application-scoped setting, so it must live in VS Code's
 # *user* settings — it can't go in devcontainer/workspace settings (those are
 # ignored for it). Idempotent: only written once.
@@ -46,7 +46,7 @@ fi
 # rebuilds PS1 on every render via PROMPT_COMMAND, so we override BOTH (clear
 # PROMPT_COMMAND, set PS1) at the END of ~/.bashrc, where last-word-wins. We
 # keep the folder name on purpose: it reinforces "which repo am I in?" — the
-# same orientation make_repo's auto-cd is about. Applies to new terminals
+# same orientation connect-repo's auto-cd is about. Applies to new terminals
 # (bashrc runs at shell start). Idempotent via the sentinel.
 if ! grep -qF 'codespace-starter:short-prompt' "$HOME/.bashrc" 2>/dev/null; then
   cat >> "$HOME/.bashrc" <<'BASHRC'
@@ -62,7 +62,7 @@ guide="$here/STUDENT_WORKFLOW.md"
 marker="$HOME/.student_repo"
 
 # postAttachCommand always runs in the codespace-starter folder (not the
-# student's open folder), so we can't detect progress by directory. make_repo.sh
+# student's open folder), so we can't detect progress by directory. connect-repo.sh
 # drops a marker once a repo has been created; until then, show the "how to
 # start" banner. Once a repo exists there's nothing more to say — stay silent
 # (no returning banner; the short prompt already shows which folder you're in).
@@ -73,7 +73,7 @@ if [[ ! -f "$marker" ]]; then
    ✅  YOUR CODESPACE IS READY
 
    Start your own project (creates a new repo):
-       .devcontainer/make_repo.sh <repo-name>
+       .devcontainer/connect-repo.sh <repo-name>
 
    Full guide: ${guide}
 

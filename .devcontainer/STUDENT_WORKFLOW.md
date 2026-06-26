@@ -1,24 +1,25 @@
 # Student workflow
 
-This Codespace is your **workshop** — it already has R, Quarto, the AI
-assistants, and all the right settings. But this `codespace-starter` repo isn't
+This Codespace is your **workshop** — it already has R, Python (with the usual
+data-science libraries), Quarto, the AI assistants, and all the right settings. But this `codespace-starter` repo isn't
 *yours*, so you won't save your work here. Instead, you'll make your **own
 repo** and work in it. The tools travel with the Codespace, so your repo needs
 no setup of its own.
 
-## 1. Make your own repo (one command)
+## 1. Create or connect to your repo (one command)
 
 In the terminal:
 
 ```bash
-.devcontainer/make_repo.sh my-class-work
+.devcontainer/connect-repo.sh my-class-work
 ```
 
 (Use any name in place of `my-class-work`.) The first time, a browser prompt
 asks you to **authorize** — click through it, then come back. The script then:
 
 - signs you in as yourself,
-- creates a new public repo under your GitHub account, and
+- creates a new public repo under your GitHub account — or, if a repo by that
+  name already exists on your account, **connects to it** (clones it) instead, and
 - downloads it into the Codespace at `/workspaces/<name>`.
 
 Then **open your repo as the workspace**: **File → Open Folder →
@@ -68,9 +69,9 @@ https://raw.githubusercontent.com/<your-username>/<your-repo>/main/plot.png
 
 - **Work in *your* repo's folder, not `codespace-starter`.** If you're editing
   files under `/workspaces/codespace-starter`, you're in the workshop, not your
-  project — re-run `make_repo` or use **File → Open Folder**.
+  project — re-run `connect-repo` or use **File → Open Folder**.
 - **Coming back later:** reopen the *same* Codespace and everything is still
-  there. If you start a **fresh** Codespace, just run `make_repo my-class-work`
+  there. If you start a **fresh** Codespace, just run `connect-repo my-class-work`
   again — it notices your repo already exists and clones it instead of erroring.
 - **If `git push` ever says "Author identity unknown":**
   ```bash
