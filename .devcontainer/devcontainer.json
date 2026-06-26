@@ -112,6 +112,14 @@
         // (numpy/pandas/etc. importable, the "Python (data science)" kernel).
         "python.defaultInterpreterPath": "/opt/venv/bin/python",
 
+        // Do NOT let the Python extension auto-`source .../activate` in every
+        // terminal. It injects that command into terminals it shouldn't touch —
+        // notably the R Tutorial terminal — corrupting whatever R command is
+        // running ("Execution halted"). It's also unnecessary: /opt/venv/bin is
+        // already first on PATH (image ENV), so `python`/`pip` resolve to the
+        // venv with no activation needed.
+        "python.terminal.activateEnvironment": false,
+
         // Use arf (Rust-based R console) instead of the default R terminal.
         // Point at the stable /usr/local/bin/arf symlink the base image
         // provides for exactly this purpose (see base/Dockerfile in
