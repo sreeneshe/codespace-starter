@@ -152,7 +152,7 @@ elif [[ "$repo" == */* ]]; then
   echo "→ '$remote' not found, and we won't create a repo under '${repo%%/*}'." >&2
   exit 1
 else
-  gh repo create "$repo" --public --clone
+  gh repo create "$remote" --public --clone
 fi
 
 # NOTE: we deliberately do NOT seed a .vscode/settings.json into the new repo.

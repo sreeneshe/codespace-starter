@@ -82,3 +82,34 @@ https://raw.githubusercontent.com/<your-username>/<your-repo>/main/plot.png
   git config --global user.name "Your Name"
   git config --global user.email "you@example.com"
   ```
+
+## What's in your workshop (and when to use what)
+
+Everything here is already installed. A quick map of what to reach for — and
+note that **all of it publishes to a plain static website** (GitHub Pages): the
+interactive pieces run in the browser, so you never need a server.
+
+**Languages & documents**
+- **R + the tidyverse + Quarto** — the core. Do your analysis and write it up in
+  a `.qmd`; render to HTML/PDF or publish a website with `quarto publish gh-pages`.
+- **Python** (pandas, numpy, scikit-learn, statsmodels, matplotlib/seaborn) — if
+  you'd rather use Python, in a `.qmd` Python chunk or a Jupyter notebook. Need
+  another package? `pip install <name>` works.
+
+**Make it interactive (still a static site)**
+- **Interactive charts / maps / tables** — `plotly`, `leaflet`, `DT` (R) or
+  `plotly`, `altair`, `folium`, `itables` (Python). Drop them in a `.qmd` for
+  zoomable charts, pannable maps, and sortable tables.
+- **Quarto dashboards & websites** — `format: dashboard` for a dashboard layout;
+  Quarto websites for multi-page sites.
+- **Observable** — `{ojs}` cells put reactive JavaScript (Observable Plot, D3)
+  in a `.qmd`; the `observable` command builds standalone data-app projects.
+- **Shinylive** — a full Shiny app (R or Python) that runs entirely in the
+  browser via WebAssembly, so even reactive apps publish to GitHub Pages.
+
+**Help while you work**
+- **AI assistants in the terminal** — `claude`, `codex`, `agy`, `aider`. Sign in
+  (or set an API key) and ask for coding help. (They're terminal tools by
+  design — they work on every device, even a tablet.)
+- **`connect-repo.sh`** — create or connect to your work repo (run `--help` to
+  see exactly what it does).
