@@ -130,9 +130,20 @@
         // authenticated AND quiet. This does NOT affect postCreateCommand (a
         // lifecycle hook, not a terminal), so the baked-package refresh keeps
         // the built-in token and avoids GitHub API rate limits.
+        // PKG_SYSREQS=false: stop pak from trying to `sudo apt-get install`
+        // system libraries when a student installs an R package at runtime.
+        // The libs packages need (libnode-dev for V8, gdal/geos/proj for sf,
+        // text-shaping libs, …) are ALREADY baked into the base image, but pak
+        // tries to (re)install them via sudo — which the non-root `rstudio`
+        // user can't do, so e.g. `pak::pkg_install("PPBDS/primer/...")` died on
+        // "System command 'sudo' failed". With this off, pak still PRINTS any
+        // sysreqs (so you can see what a niche package needs) but builds against
+        // the baked libs instead of shelling out. Scoped to terminals only —
+        // the image build / postCreate run as root and keep installing sysreqs.
         "terminal.integrated.env.linux": {
           "GITHUB_TOKEN": "",
-          "GH_TOKEN": ""
+          "GH_TOKEN": "",
+          "PKG_SYSREQS": "false"
         },
 
         // Use arf (Rust-based R console) instead of the default R terminal.
