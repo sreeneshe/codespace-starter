@@ -120,6 +120,21 @@
         // venv with no activation needed.
         "python.terminal.activateEnvironment": false,
 
+        // Blank the built-in, repo-scoped GITHUB_TOKEN / GH_TOKEN in integrated
+        // terminals — INCLUDING the R console (arf), which the R extension
+        // launches with the VS Code server's environment. Without this, R's
+        // remotes/pak see GITHUB_TOKEN and nag on every install_github:
+        // "Using github PAT from envvar GITHUB_TOKEN ... use the more secure
+        // credential store instead." Emptied here, they fall back to the git
+        // credential store (your token, set by connect-repo) — so installs are
+        // authenticated AND quiet. This does NOT affect postCreateCommand (a
+        // lifecycle hook, not a terminal), so the baked-package refresh keeps
+        // the built-in token and avoids GitHub API rate limits.
+        "terminal.integrated.env.linux": {
+          "GITHUB_TOKEN": "",
+          "GH_TOKEN": ""
+        },
+
         // Use arf (Rust-based R console) instead of the default R terminal.
         // Point at the stable /usr/local/bin/arf symlink the base image
         // provides for exactly this purpose (see base/Dockerfile in
