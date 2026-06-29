@@ -9,7 +9,7 @@
   // repo is just data, opened as a folder inside the same Codespace; it needs
   // no prebuild of its own.
 
-  // PPBDS student image, pinned to v0.6.1. Bumping is a deliberate
+  // PPBDS student image, pinned to v0.6.2. Bumping is a deliberate
   // edit to this line — never use `:latest` in student-facing config,
   // since it would float silently with every push to PPBDS/devcontainers.
   //
@@ -35,7 +35,7 @@
   // OTHER repos (e.g., cloning a sibling package and pushing to it)
   // requires a one-time `gh auth login` per Codespace — that's by design,
   // not a bug. The built-in token is read-mostly outside the home repo.
-  "image": "ghcr.io/ppbds/devcontainers/student:0.6.1",
+  "image": "ghcr.io/ppbds/devcontainers/student:0.6.2",
 
   // Refresh the fast-moving PPBDS course packages to the latest commit on
   // each one's default branch, every time a Codespace is created. The
@@ -131,16 +131,19 @@
         // authenticated AND quiet. This does NOT affect postCreateCommand (a
         // lifecycle hook, not a terminal), so the baked-package refresh keeps
         // the built-in token and avoids GitHub API rate limits.
-        // PKG_SYSREQS=false: stop pak from trying to `sudo apt-get install`
-        // system libraries when a student installs an R package at runtime.
-        // The libs packages need (libnode-dev for V8, gdal/geos/proj for sf,
-        // text-shaping libs, …) are ALREADY baked into the base image, but pak
-        // tries to (re)install them via sudo — which the non-root `rstudio`
-        // user can't do, so e.g. `pak::pkg_install("PPBDS/primer/...")` died on
-        // "System command 'sudo' failed". With this off, pak still PRINTS any
-        // sysreqs (so you can see what a niche package needs) but builds against
-        // the baked libs instead of shelling out. Scoped to terminals only —
-        // the image build / postCreate run as root and keep installing sysreqs.
+        // PKG_SYSREQS=false stops pak from trying to `sudo apt-get install`
+        // system requirements when a student installs an R package — the
+        // non-root rstudio user can't sudo, so e.g. a package pulling in V8
+        // would otherwise die on "System command 'sudo' failed". The system
+        // libs our packages need are provided by the base image (geospatial,
+        // text-shaping, …); pak builds against those. With this off pak still
+        // PRINTS any sysreq it believes is missing but does not install it.
+        // NOTE: this is primarily set GLOBALLY in the student image itself
+        // (ENV PKG_SYSREQS=false in student/Dockerfile), which already covers
+        // the build, postCreate, and runtime terminals. It is repeated here as
+        // a terminal-scoped belt-and-suspenders. (Separately, the V8 "missing
+        // libnode-dev" false positive is handled in the image via a metadata
+        // libnode-dev-virtual package — see base/Dockerfile.)
         "terminal.integrated.env.linux": {
           "GITHUB_TOKEN": "",
           "GH_TOKEN": "",
