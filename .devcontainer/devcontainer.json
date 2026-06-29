@@ -165,6 +165,12 @@
         // instead of opening an external window (which doesn't work in Codespaces).
         "r.plot.useHttpgd": true,
 
+        // Make the "Run Source" button (the ▷ in the editor title bar) and its
+        // Ctrl/Cmd+Shift+S shortcut run source(FILE, echo = TRUE) instead of a
+        // silent source, so students see each line echo as it executes — not
+        // just the final output.
+        "r.source.echo": true,
+
         // Prevent VS Code from nagging to relaunch the terminal when
         // environment variables change.
         "terminal.integrated.environmentChangesRelaunch": false,
