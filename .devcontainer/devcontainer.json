@@ -1,23 +1,29 @@
 {
   "name": "Preceptor's Primer",
 
-  // TODO — revisit before next term: do students actually get the prebuild?
-  // Codespaces prebuilds ARE enabled on PPBDS/codespace-starter (Settings →
-  // Codespaces), which makes launches FROM THIS REPO fast. But a prebuild
-  // attaches to this repo only. If students get their own copy via "Use
-  // this template" or GitHub Classroom, those are fresh repos with NO
-  // prebuild — their first launch builds on-demand (slow). Need to decide
-  // the distribution model: (a) students launch Codespaces directly from
-  // codespace-starter → they benefit from the prebuild; or (b) students
-  // work in a copy → they don't, and we'd need another plan (prebuilds on
-  // the assignment repos, or just accept the cold first start).
+  // Distribution model (settled): students launch a Codespace directly ON
+  // PPBDS/codespace-starter and run connect-repo.sh to create or clone their
+  // own work repo — they do NOT "Use this template", fork, or use Classroom.
+  // Because they launch from THIS repo, they get its Codespaces prebuild
+  // (enabled in Settings → Codespaces), so first launches are fast. Their work
+  // repo is just data, opened as a folder inside the same Codespace; it needs
+  // no prebuild of its own.
 
-  // PPBDS student image, pinned to v0.5.0. Bumping is a deliberate
+  // PPBDS student image, pinned to v0.6.3. Bumping is a deliberate
   // edit to this line — never use `:latest` in student-facing config,
   // since it would float silently with every push to PPBDS/devcontainers.
   //
   // Bakes in: gh, quarto, arf (Rust R console), httpgd, pak,
-  // tutorial.helpers, vscode.tutorials, and four AI coding CLIs:
+  // tutorial.helpers, vscode.tutorials, misc.tutorials, primer.tutorials,
+  // a modeling stack (tidymodels + xgboost/lightgbm/catboost/randomForest/
+  // ranger/glmnet engines + brms for Bayesian/Stan),
+  // a basic Python data-science stack
+  // (numpy/pandas/matplotlib/seaborn/scikit-learn/statsmodels/jupyter in a venv
+  // at /opt/venv, the default `python`), interactive-viz + Shinylive
+  // packages (R plotly/leaflet/DT/crosstalk + Python plotly/altair/folium/
+  // itables; shiny+shinylive compile to WebAssembly for static hosting),
+  // Observable (Quarto renders {ojs} cells out of the box; the `observable`
+  // Framework CLI is also installed), and four AI coding CLIs:
   //   - claude  (Anthropic)         — sign in with a Claude plan, or ANTHROPIC_API_KEY
   //   - codex   (OpenAI)            — sign in with a ChatGPT plan, or `codex login`
   //   - agy     (Antigravity/Google)— sign in with a Google account, or ANTIGRAVITY_API_KEY
@@ -31,7 +37,7 @@
   // OTHER repos (e.g., cloning a sibling package and pushing to it)
   // requires a one-time `gh auth login` per Codespace — that's by design,
   // not a bug. The built-in token is read-mostly outside the home repo.
-  "image": "ghcr.io/ppbds/devcontainers/student:0.5.0",
+  "image": "ghcr.io/ppbds/devcontainers/student:0.6.3",
 
   // Refresh the fast-moving PPBDS course packages to the latest commit on
   // each one's default branch, every time a Codespace is created. The
@@ -58,7 +64,7 @@
   // repo ASAP — that fixes all subsequent creates immediately, with no
   // image rebuild or pin bump needed. (If this ever bites too often, switch
   // to pinning a tested release tag here and bumping it deliberately.)
-  "postCreateCommand": "R -q -e 'pak::pkg_install(c(\"PPBDS/tutorial.helpers\", \"PPBDS/vscode.tutorials\"), ask = FALSE)'",
+  "postCreateCommand": "R -q -e 'pak::pkg_install(c(\"PPBDS/tutorial.helpers\", \"PPBDS/vscode.tutorials\", \"PPBDS/misc.tutorials\", \"PPBDS/primer/primer.tutorials\"), ask = FALSE)'",
 
   // "Setup complete" signal + onboarding, via postAttachCommand — NOT
   // postStartCommand. This distinction is the whole point: in Codespaces,
@@ -94,10 +100,57 @@
         "PPBDS.vscode-r-tutorials",
         "ritwickdey.LiveServer",
         "tomoki1207.pdf",
-        "mechatroner.rainbow-csv"
+        "mechatroner.rainbow-csv",
+        // Python data science: language support + notebooks. Unlike the AI
+        // assistant panels above, these are ordinary language tooling that
+        // renders fine in the web Codespaces client.
+        "ms-python.python",
+        "ms-toolsai.jupyter"
       ],
 
       "settings": {
+
+        // Point the Python extension at the baked data-science venv so
+        // notebooks and scripts use the right interpreter out of the box
+        // (numpy/pandas/etc. importable, the "Python (data science)" kernel).
+        "python.defaultInterpreterPath": "/opt/venv/bin/python",
+
+        // Do NOT let the Python extension auto-`source .../activate` in every
+        // terminal. It injects that command into terminals it shouldn't touch —
+        // notably the R Tutorial terminal — corrupting whatever R command is
+        // running ("Execution halted"). It's also unnecessary: /opt/venv/bin is
+        // already first on PATH (image ENV), so `python`/`pip` resolve to the
+        // venv with no activation needed.
+        "python.terminal.activateEnvironment": false,
+
+        // Blank the built-in, repo-scoped GITHUB_TOKEN / GH_TOKEN in integrated
+        // terminals — INCLUDING the R console (arf), which the R extension
+        // launches with the VS Code server's environment. Without this, R's
+        // remotes/pak see GITHUB_TOKEN and nag on every install_github:
+        // "Using github PAT from envvar GITHUB_TOKEN ... use the more secure
+        // credential store instead." Emptied here, they fall back to the git
+        // credential store (your token, set by connect-repo) — so installs are
+        // authenticated AND quiet. This does NOT affect postCreateCommand (a
+        // lifecycle hook, not a terminal), so the baked-package refresh keeps
+        // the built-in token and avoids GitHub API rate limits.
+        // PKG_SYSREQS=false stops pak from trying to `sudo apt-get install`
+        // system requirements when a student installs an R package — the
+        // non-root rstudio user can't sudo, so e.g. a package pulling in V8
+        // would otherwise die on "System command 'sudo' failed". The system
+        // libs our packages need are provided by the base image (geospatial,
+        // text-shaping, …); pak builds against those. With this off pak still
+        // PRINTS any sysreq it believes is missing but does not install it.
+        // NOTE: this is primarily set GLOBALLY in the student image itself
+        // (ENV PKG_SYSREQS=false in student/Dockerfile), which already covers
+        // the build, postCreate, and runtime terminals. It is repeated here as
+        // a terminal-scoped belt-and-suspenders. (Separately, the V8 "missing
+        // libnode-dev" false positive is handled in the image via a metadata
+        // libnode-dev-virtual package — see base/Dockerfile.)
+        "terminal.integrated.env.linux": {
+          "GITHUB_TOKEN": "",
+          "GH_TOKEN": "",
+          "PKG_SYSREQS": "false"
+        },
 
         // Use arf (Rust-based R console) instead of the default R terminal.
         // Point at the stable /usr/local/bin/arf symlink the base image
@@ -113,6 +166,12 @@
         // Render plots inside VS Code via the httpgd graphics device
         // instead of opening an external window (which doesn't work in Codespaces).
         "r.plot.useHttpgd": true,
+
+        // Make the "Run Source" button (the ▷ in the editor title bar) and its
+        // Ctrl/Cmd+Shift+S shortcut run source(FILE, echo = TRUE) instead of a
+        // silent source, so students see each line echo as it executes — not
+        // just the final output.
+        "r.source.echo": true,
 
         // Prevent VS Code from nagging to relaunch the terminal when
         // environment variables change.
