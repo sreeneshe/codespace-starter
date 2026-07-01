@@ -21,3 +21,5 @@ cache/
 # Do NOT ignore rendered HTML files
 !*.html
 !**/*.html
+
+analysis_files/
