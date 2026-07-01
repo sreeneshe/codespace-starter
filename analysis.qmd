@@ -18,21 +18,30 @@ Below is a visualization showing the annual number of named storms tracked in th
 
 ```{r}
 #| label: plot-storms
-#| fig-cap: "Annual frequency of named storms in the Atlantic Ocean (1975-2024)."
+#| fig-cap: "Annual frequency of storm types in the Atlantic Ocean (1975-2024)."
 #| warning: false
 #| message: false
 
 storms |>
-  group_by(year) |>
-  summarise(n_storms = n_distinct(name)) |>
-  ggplot(aes(x = year, y = n_storms)) +
-  geom_line(color = "#34495e", linewidth = 1.2, alpha = 0.8) +
-  geom_point(color = "#e74c3c", size = 2.5) +
+  filter(status %in% c("tropical depression", "tropical storm", "hurricane")) |>
+  mutate(status = factor(status, levels = c("tropical depression", "tropical storm", "hurricane"))) |>
+  group_by(year, status) |>
+  summarise(n_storms = n_distinct(name), .groups = "drop") |>
+  ggplot(aes(x = year, y = n_storms, fill = status)) +
+  geom_area(alpha = 0.8, color = "white", linewidth = 0.2, position = position_stack(reverse = TRUE)) +
+  scale_fill_manual(
+    values = c(
+      "tropical depression" = "#8bc0e0",
+      "tropical storm" = "#f39c12",
+      "hurricane" = "#a93226"
+    )
+  ) +
   labs(
-    title = "Annual Named Storms in the Atlantic",
-    subtitle = "Number of unique named storms tracked per year (1975-2024)",
+    title = "Annual Storm Frequency in the Atlantic by Type",
+    subtitle = "Number of unique storms classified by status per year (1975-2024)",
     x = "Year",
-    y = "Storm Count"
+    y = "Storm Count",
+    fill = "Storm Type"
   ) +
   theme_minimal(base_family = "sans") +
   theme(
@@ -40,6 +49,9 @@ storms |>
     plot.subtitle = element_text(size = 11, color = "#7f8c8d", margin = margin(b = 15)),
     axis.title = element_text(face = "bold", size = 11, color = "#2c3e50"),
     axis.text = element_text(color = "#34495e"),
+    legend.title = element_text(face = "bold", size = 10, color = "#2c3e50"),
+    legend.text = element_text(size = 9, color = "#34495e"),
+    legend.position = "bottom",
     panel.grid.major = element_line(color = "#f0f3f4"),
     panel.grid.minor = element_blank(),
     plot.margin = margin(20, 20, 20, 20)
