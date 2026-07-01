@@ -1,0 +1,23 @@
+# Quarto Cache and Build Directories
+.quarto/
+_site/
+_book/
+_manuscript/
+_freeze/
+*_cache/
+cache/
+
+# R-specific Files
+.Rhistory
+.RData
+.Ruserdata
+.Renviron
+.Rproj.user/
+
+# Knitr/Pandoc intermediate files
+*.knit.md
+*.utf8.md
+
+# Do NOT ignore rendered HTML files
+!*.html
+!**/*.html

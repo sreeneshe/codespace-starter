@@ -1,0 +1,47 @@
+---
+title: "Exploring Storms"
+author: "sreeneshe"
+format: html
+execute:
+  echo: false
+---
+
+```{r}
+#| label: setup
+#| include: false
+suppressPackageStartupMessages(library(tidyverse))
+```
+
+## Named Storms Per Year
+
+Below is a visualization showing the annual number of named storms tracked in the NOAA Atlantic hurricane database (HURDAT).
+
+```{r}
+#| label: plot-storms
+#| fig-cap: "Annual frequency of named storms in the Atlantic Ocean (1975-2024)."
+#| warning: false
+#| message: false
+
+storms |>
+  group_by(year) |>
+  summarise(n_storms = n_distinct(name)) |>
+  ggplot(aes(x = year, y = n_storms)) +
+  geom_line(color = "#34495e", linewidth = 1.2, alpha = 0.8) +
+  geom_point(color = "#e74c3c", size = 2.5) +
+  labs(
+    title = "Annual Named Storms in the Atlantic",
+    subtitle = "Number of unique named storms tracked per year (1975-2024)",
+    x = "Year",
+    y = "Storm Count"
+  ) +
+  theme_minimal(base_family = "sans") +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, color = "#2c3e50", margin = margin(b = 6)),
+    plot.subtitle = element_text(size = 11, color = "#7f8c8d", margin = margin(b = 15)),
+    axis.title = element_text(face = "bold", size = 11, color = "#2c3e50"),
+    axis.text = element_text(color = "#34495e"),
+    panel.grid.major = element_line(color = "#f0f3f4"),
+    panel.grid.minor = element_blank(),
+    plot.margin = margin(20, 20, 20, 20)
+  )
+```
